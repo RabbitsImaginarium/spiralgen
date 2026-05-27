@@ -1,0 +1,46 @@
+project Satsort is
+
+   for Source_Dirs use ("/home/gleung/ivar/c/GE/SATsort");
+   for Object_Dir use "/home/gleung/ivar/c/GE/SATsort";
+   for Languages use ("C++", "Project file");
+
+   package Builder is
+      for Default_Switches ("ada") use ("-g", "-gnatQ");
+      for Executable ("SATsort.c") use "SATsort";
+   end Builder;
+
+   package Compiler is
+      for Default_Switches ("ada") use ("-g");
+      for Default_Switches ("c") use ("-g", "-Wall");
+      for Default_Switches ("c++") use ("");
+      for Switches ("satsort.c") use ("-g", "-Wall", "-I/home/gleung/ivar/c/GE/include -I/usr/include");
+      for Default_Switches ("C") use ("");
+      for Default_Switches ("C++") use ("-g", "-Wall");
+   end Compiler;
+
+   package Linker is
+      for Default_Switches ("ada") use ("-g");
+   end Linker;
+
+   package Binder is
+      for Default_Switches ("ada") use ("-static");
+   end Binder;
+
+   package Pretty_Printer is
+      for Default_Switches ("ada") use ("");
+   end Pretty_Printer;
+
+   package Naming is
+      for Specification_Suffix ("c++") use ".h";
+      for Implementation_Suffix ("c++") use ".c";
+      for Specification_Suffix ("project file") use "";
+   end Naming;
+
+   for Main use ("SATsort.c");
+
+   package Ide is
+      for Compiler_Command ("c++") use "g++";
+   end Ide;
+
+end Satsort;
+

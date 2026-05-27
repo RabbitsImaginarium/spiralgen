@@ -1,0 +1,539 @@
+# Makefile        
+# Copyright (c) 1996 The General Electric Company
+# Makefile for Epic+ and EpicTools
+
+SHELL=/bin/sh
+
+SUFFIXES = .c .o .hwo
+
+.SUFFIXES: $(SUFFIXES)
+
+#
+# The psd name (no .e)
+#
+PSDFILE=
+
+#
+# Any additional E subroutines in separate files (no .e)
+# 
+EFILES=
+
+#
+# Any additional E files of inline descent
+# 
+IEFILES=
+
+#
+# Any additional C subroutines for simulation in separate files (no .c)
+#
+SIMHOSTOBJS=$(ADDHOST_OBJS)
+SIMIPGOBJS=$(ADDIPG_OBJS)
+
+#
+# Any additional C subroutines for hardware in separate files (no .c)
+#
+HWHOSTOBJS=$(ADDHOST_OBJS)
+HWIPGOBJS=$(ADDIPG_OBJS)
+
+#
+# Any Epic macro definition files
+#
+EPIC_MACROS=
+
+HEADERS=$(EPIC_MACROS) grad_rf_$(PSDFILE).h
+
+#
+# main epic+ subdirectory where all intermediate files go
+#
+EPICPLUSDIR=./EPIC+
+
+#
+# flag that tells whether to optimize runtime_*defs.c includes
+# using epic.h (cv_const.e). 
+#
+SIM_EPICOPT=1
+HW_EPICOPT=1
+
+#
+# for timing each pass
+#
+TIME=
+
+#
+# purelink incremental linker
+#
+PURELINK=
+
+#
+# verbose mode on/off
+#
+VERBOSE=
+
+#
+# static flag
+#
+SIMSTATIC=-Bstatic
+HWSTATIC=
+
+#
+# Epic+ options
+#
+
+HOSTSUFFIXES = .allcv.h .hostdecl.h .global.h .ipgex.h .exportstr.h
+IPGSUFFIXES  = .allcv.h .global.h .ipgdecl.h .ipgex.h
+
+EPICPLUSDIR=./EPIC+
+
+SIM_EPICOPT = 1
+
+HW_EPICOPT = 1
+
+TIME=
+
+VERBOSE=
+
+EFILES= 
+EOBJS=$(PSDFILE) $(EFILES)
+SUBEOBJS=$(PSDFILE) $(EFILES)
+PEOBJS=$(SUBEOBJS:%=.%.e)
+
+ALLCV=$(EOBJS:%=%.allcv.h)
+EXPORTSTR=$(EOBJS:%=%.exportstr.h)
+HOSTDECL=$(EOBJS:%=%.hostdecl.h)
+IPGEX=$(EOBJS:%=%.ipgex.h)
+IPGDECL=$(EOBJS:%=%.ipgdecl.h)
+GLOBAL=$(EOBJS:%=%.global.h)
+
+ALLCV_SIMDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.allcv_simdefs.h)
+EXPORTSTR_SIMDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.exportstr_simdefs.h)
+HOSTDECL_SIMDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.hostdecl_simdefs.h)
+IPGEX_SIMDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.ipgex_simdefs.h)
+IPGDECL_SIMDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.ipgdecl_simdefs.h)
+GLOBAL_SIMDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.global_simdefs.h)
+
+ALLCV_HWDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.allcv_hwdefs.h)
+EXPORTSTR_HWDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.exportstr_hwdefs.h)
+HOSTDECL_HWDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.hostdecl_hwdefs.h)
+IPGEX_HWDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.ipgex_hwdefs.h)
+IPGDECL_HWDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.ipgdecl_hwdefs.h)
+GLOBAL_HWDEFS=$(EOBJS:%=$(EPICPLUSDIR)/%.global_hwdefs.h)
+
+# include files via parsing macro calls in EFILES
+CV_INLINES=$(EOBJS:%=$(EPICPLUSDIR)/%.cv.eh)
+
+SIMDEFS= $(EPICPLUSDIR)/$(PSDFILE).allcv_simdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).exportstr_simdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).ipgdecl_simdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).hostdecl_simdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).ipgex_simdefs_all.h
+
+HWDEFS= $(EPICPLUSDIR)/$(PSDFILE).allcv_hwdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).exportstr_hwdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).ipgdecl_hwdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).hostdecl_hwdefs_all.h \
+	$(EPICPLUSDIR)/$(PSDFILE).ipgex_hwdefs_all.h
+
+PROCESSEXEC= PSDBIN=. processefile
+BUILDEXEC= PSDBIN=.  buildruntime
+MERGEEXEC= PSDBIN=.  mergehfiles
+
+HOSTSIMOPTOBJS=./cv_const.hostdecl_simdefs.adhost.o
+HOSTHWOPTOBJS =./cv_const.hostdecl_hwdefs.ahost.o
+
+#
+# hostsim executables
+#
+HOSTSIMEXECS=$(PSDFILE:%=%.host)
+IPGSIMEXECS=$(PSDFILE:%=%.ipg)
+SIMEXECS=$(HOSTSIMEXECS) $(IPGSIMEXECS)
+
+#
+# hw executables
+#
+HOSTHWEXECS=$(PSDFILE)
+IPGHWEXECS=$(PSDFILE:%=%.psd.o)
+HWEXECS=$(HOSTHWEXECS) $(IPGHWEXECS)
+
+#
+# feature libs
+#
+
+FEATURELIBS=features
+FEATURE_LIST=`cat ./$(FEATURELIBS)_list`
+#FEATURE_TARGET=feature_expand
+
+#
+# hostsim objects
+#
+
+EHOSTSIMCFILES=$(EFILES:%=%.host.c) $(EPICPLUSDIR)/$(PSDFILE).runtime_simdefs.c
+EHOSTSIMOBJS=$(EFILES:%=%.hostsim.o) $(EPICPLUSDIR)/$(PSDFILE).runtime_simdefs.ahostsim.o
+EVALEHOSTSIMOBJS=$(EFILES:%=%.hostsim.o) $(PSDFILE).eval_defs.o
+
+ALLHOSTSIMCFILES=$(HOSTSIMCFILES) $(EHOSTSIMCFILES)
+ALLHOSTSIMOBJS=$(HOSTSIMOBJS) $(EHOSTSIMOBJS)
+ALLEVALHOSTSIMOBJS=$(EVALHOSTSIMOBJS) $(EVALEHOSTSIMOBJS)
+HOSTSIMLINTFILES=$(ALLHOSTSIMCFILES:%.c=%.ln) $(PSDFILE).host.ln
+
+HOSTSIMFLIBS=$(FEATURELIBS:%=%_hostsim)
+
+HOSTSIMLIBS=$(HOSTSIMFLIBS)
+
+ALLHOSTSIMLIBS=$(HOSTSIMLIBS:%=-l%)
+
+#
+# ipgsim objects
+#
+
+EIPGSIMCFILES=$(EFILES:%=%D_.ipg.c) $(EPICPLUSDIR)/$(PSDFILE).ipg_simdefs.c
+EIPGSIMOBJS=$(EFILES:%=%.o) $(EPICPLUSDIR)/$(PSDFILE).ipg_simdefs.o
+EVALEIPGSIMOBJS=$(EFILES:%=%.ipgsim.o)
+
+ALLIPGSIMCFILES=$(IPGSIMCFILES) $(EIPGSIMCFILES)
+ALLIPGSIMOBJS=$(IPGSIMOBJS) $(EIPGSIMOBJS)
+ALLEVALIPGSIMOBJS=$(EVALIPGSIMOBJS) $(EVALEIPGSIMOBJS)
+IPGSIMLINTFILES=$(ALLIPGSIMCFILES:%.c=%.ln) $(PSDFILE).ipg.ln
+
+IPGSIMFLIBS=$(FEATURELIBS:%=%_ipgsim)
+
+IPGSIMLIBS=$(IPGSIMFLIBS)
+
+ALLIPGSIMLIBS=$(IPGSIMLIBS:%=-l%)
+
+#
+# hosthw objects
+#
+
+EHOSTHWCFILES=$(EFILES:%=%_host.c) $(EPICPLUSDIR)/$(PSDFILE).runtime_hwdefs.c
+EHOSTHWOBJS=$(EFILES:%=%_host.o) $(EPICPLUSDIR)/$(PSDFILE).runtime_hwdefs.o
+
+ALLHOSTHWCFILES=$(HOSTHWCFILES) $(EHOSTHWCFILES)
+ALLHOSTHWOBJS=$(HOSTHWOBJS) $(EHOSTHWOBJS)
+HOSTHWLINTFILES=$(ALLHOSTHWCFILES:%.c=%.ln) $(PSDFILE).host.ln
+
+HOSTHWFLIBS=$(FEATURELIBS:%=%_hosthw)
+
+HOSTHWLIBS=$(HOSTHWFLIBS)
+
+ALLHOSTHWLIBS=$(HOSTHWLIBS:%=-l%)
+
+#
+# ipghw objects
+#
+
+EIPGHWCFILES=$(EFILES:%=%_ipg.c) $(EPICPLUSDIR)/$(PSDFILE).ipg_hwdefs.c
+EIPGHWOBJS=$(EFILES:%=%_ipg.hwo) $(EPICPLUSDIR)/$(PSDFILE).ipg_hwdefs.hwo
+
+ALLIPGHWCFILES=$(IPGHWCFILES) $(EIPGHWCFILES)
+ALLIPGHWOBJS=$(IPGHWOBJS) $(EIPGHWOBJS)
+IPGHWLINTFILES=$(ALLIPGHWCFILES:%.c=%.ln) $(PSDFILE).ipg.ln
+
+IPGHWFLIBS=$(FEATURELIBS:%=%_ipghw)
+
+IPGHWLIBS=$(IPGHWFLIBS)
+
+ALLIPGHWLIBS=$(IPGHWLIBS:%=-l%)
+
+USERCFLAGS =
+
+
+#PSDBIN=.
+PSDBINDIR=$(PSDBIN)
+
+CC = ./gcc 
+LD = ld
+IPGHW_CC=ep_cc -target=sun3
+IPGHW_CCOPT=-DIPG -c -DHW_IO -traditional
+IPGHW_LD=ep_ld -target=sun3
+LOCKFLAG=
+CCOPTS=
+DEBUG=
+FLOAT=
+ECFLAGS= -z
+LDFLAGS= -L$(PSDBINDIR) 
+VXINC= -I./h
+LINTFILES=$(CFILES:.c=.ln)
+
+
+CFLAGS= $(DEBUG) $(CCOPTS) $(USROPTS)
+IPGHW_CFLAGS= $(DEBUG) $(CCOPTS) $(USROPTS)
+
+CPPFLAGS= -I. -I$(PSDBINDIR) $(LOCKFLAG) -DEXTERN=extern -DLX_
+LINTFLAGS=$(CFLAGS) -u
+
+COMPILE  = $(CC) $(FLOAT) $(CFLAGS) $(CPPFLAGS) -c
+EVALCOMPILE  = $(CC) $(CFLAGS) $(CPPFLAGS) -c
+LINK  = $(CC) $(FLOAT) $(CFLAGS) $(LDFLAGS)
+
+COMPILE_IPGHW  = $(IPGHW_CC) $(IPGHW_CCOPT) $(CFLAGS) $(CPPFLAGS) -c
+LINK_IPGHW  = $(IPGHW_LD) $(LDFLAGS)
+
+EVAL_INCLUDE = $(PSDFILE).ipgdecl.h
+
+MERGEEXEC=mergehfiles
+PROCESSEXEC=processefile
+BUILDEXEC=buildruntime
+PSDBINDIR=$(PSDBIN)
+
+# PROJECT_VERSION is defined to make during putback, to be the CM version
+# identifier of the version currently being put back. PROJECT_NAME is the
+# name of the cm project. PROJECT_BRANCH is the name of the current
+# branch.
+PROJECT_VERSION=last
+#PROJECT_BRANCH=lx
+PROJECT_NAME=mr
+
+
+# special function targets
+
+# 				dependencies
+#				list of all targets which should be built
+#				when you put back the project.
+
+all: hosthw ipghw hostsim ipgsim
+
+
+hostsim:	pass1 .sim_merge pass2_hostsim
+		@echo $@ built successfully
+
+ipgsim:		pass1 .sim_merge pass2_ipgsim
+		@echo $@ built successfully
+
+hosthw:		pass1 .hw_merge pass2_hosthw
+		@echo $@ built successfully
+
+ipghw:		pass1 .hw_merge pass2_ipghw
+		@echo $@ built successfully
+
+
+#setup:
+#	setup_epicplus
+
+pass1:	$(PEOBJS) .features
+
+pass2_hostsim:	$(PSDFILE).host
+
+pass2_ipgsim:	$(PSDFILE).ipg
+
+pass2_hosthw:	$(PSDFILE)
+
+pass2_ipghw:	$(PSDFILE).psd.o
+
+#
+# build of host hw executables ---------------------------------
+#
+
+$(PSDFILE):	$(PSDFILE).host.o $(ALLHOSTHWOBJS)
+	$(LINK) $(PSDFILE).host.o $(ALLHOSTHWOBJS) \
+	$(HOSTHWOPTOBJS) $(ALLHOSTHWLIBS) \
+	-lhost_hw -lm -lc -o $@
+
+$(EPICPLUSDIR)/$(PSDFILE).runtime_hwdefs.o:	\
+		$(EPICPLUSDIR)/$(PSDFILE).runtime_hwdefs.c $(C_INCLUDES)
+	$(COMPILE) -g $< -o $@
+
+#.c.o:
+#	$(COMPILE) $< -o $@
+
+#
+# build of ipg hw executables ----------------------------------
+#
+
+$(PSDFILE).psd.o:	$(PSDFILE)_ipg.hwo $(ALLIPGHWOBJS) 
+	$(LINK_IPGHW) -r -x -u _EpicConf $< $(ALLIPGHWOBJS) $(ALLIPGHWLIBS)  \
+	-lipg_hw -o $@
+
+.c.hwo:	%.ipg.c 
+	$(COMPILE_IPGHW) $< -o $@
+
+#
+# host sim targets ------------------------------------------
+#
+
+$(PSDFILE).host:	$(PSDFILE).host.o $(ALLHOSTSIMOBJS)
+	$(LINK) $< $(ALLHOSTSIMOBJS) \
+	$(HOSTSIMOPTOBJS) $(ALLHOSTSIMLIBS) \
+	-lhost_sim -lm -o $@
+
+$(PSDFILE).host.o:	$(PSDFILE).host.c $(C_INCLUDES)
+	$(COMPILE) -g $< -o $@
+
+$(EPICPLUSDIR)/$(PSDFILE).runtime_simdefs.ahostsim.o:	\
+		$(EPICPLUSDIR)/$(PSDFILE).runtime_simdefs.c $(C_INCLUDES)
+	$(COMPILE) -g  $< -o $@
+
+%.ahostsim.o:	%.c $(C_INCLUDES)
+	$(COMPILE) -DERMES_DEBUG $< -o $@
+
+#
+# ipg sim targets ------------------------------------------
+#
+
+$(PSDFILE).ipg:	$(PSDFILE).ipg.o $(ALLIPGSIMOBJS)
+	$(LINK) $< $(ALLIPGSIMOBJS) \
+	$(IPGSIMOPTOBJS) $(ALLIPGSIMLIBS) \
+	-lipg_sim -lm -o $@
+
+$(PSDFILE).ipg.o: $(PSDFILE).ipg.c $(C_INCLUDES)
+	$(COMPILE) -g -DERMES_DEBUG $< -o $@
+
+$(EPICPLUSDIR)/$(PSDFILE).ipg_simdefs.ahostsim.o:	\
+		$(EPICPLUSDIR)/$(PSDFILE).ipg_simdefs.c $(C_INCLUDES)
+	$(COMPILE) -g  $< -o $@
+
+%.hostsim.o:	%.host.c $(C_INCLUDES)
+	$(COMPILE) -DERMES_DEBUG $< -o $@
+
+%.ipgsim.o:	%.ipg.c $(C_INCLUDES)
+	$(COMPILE)  -DERMES_DEBUG $< -o $@
+
+%.aipgsim.o:	%.c $(C_INCLUDES)
+	$(COMPILE)  -DERMES_DEBUG $< -o $@
+
+#
+# More Epic+ stuff - targets for merging all include files
+# and building c-files from e-files.
+#
+
+$(EPICPLUSDIR)/$(PSDFILE).allcv_simdefs_all.h: $(ALLCV_SIMDEFS)
+#	 @echo sim_merge allcv
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) sim allcv $(SIM_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).exportstr_simdefs_all.h: $(EXPORTSTR_SIMDEFS)
+#	 @echo sim_merge exportstr
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) sim exportstr $(SIM_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).ipgdecl_simdefs_all.h: $(IPGDECL_SIMDEFS)
+#	 @echo sim_merge ipgdecl
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) sim ipgdecl $(SIM_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).hostdecl_simdefs_all.h: $(HOSTDECL_SIMDEFS)
+#	 @echo sim_merge hostdecl
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) sim hostdecl $(SIM_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).ipgex_simdefs_all.h: $(IPGEX_SIMDEFS)
+#	 @echo sim_merge ipgex
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) sim ipgex $(SIM_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).allcv_hwdefs_all.h: $(ALLCV_HWDEFS)
+#	 @echo hw_merge allcv
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) hw allcv $(HW_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).exportstr_hwdefs_all.h: $(EXPORTSTR_HWDEFS)
+#	 @echo hw_merge exportstr
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) hw exportstr $(HW_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).ipgdecl_hwdefs_all.h: $(IPGDECL_HWDEFS)
+#	 @echo hw_merge ipgdecl
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) hw ipgdecl $(HW_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).hostdecl_hwdefs_all.h: $(HOSTDECL_HWDEFS)
+#	 @echo hw_merge hostdecl
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) hw hostdecl $(HW_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+$(EPICPLUSDIR)/$(PSDFILE).ipgex_hwdefs_all.h: $(IPGEX_HWDEFS)
+#	 @echo hw_merge ipgex
+	 $(VERBOSE)$(TIME) $(MERGEEXEC) hw ipgex $(HW_EPICOPT) $(EOBJS) $(FEATURE_LIST)
+
+.sim_merge:  $(SIMDEFS) .features
+#	 @echo merging
+	 $(VERBOSE)$(TIME) $(BUILDEXEC) sim $(EOBJS) $(FEATURE_LIST)
+	 $(VERBOSE)touch $@
+
+.hw_merge:  $(HWDEFS) .features
+#	 @echo merging
+	 $(VERBOSE)$(TIME) $(BUILDEXEC) hw $(EOBJS) $(FEATURE_LIST)
+	 $(VERBOSE)touch $@
+
+%.cv.eh:	 %.e $(EPIC_INCLUDES) $(C_INCLUDES)
+	@echo parsing macros for cvs
+	cvparse %
+
+#
+# Epic preprocessor
+#
+.%.e:	%.e $(EPIC_INCLUDES) $(C_INCLUDES)
+	$(VERBOSE)$(TIME) $(PROCESSEXEC) $(PSDFILE) $* \
+                 "-DINIT -DEXTERN= -DINC4CPP -DMCVALL -I${PSDBIN}" \
+	         "-DINIT -DEXTERN= -DINC4CPP -DMCVALL -I${PSDBIN}"
+	$(VERBOSE)touch $@
+	cp $*.host.c $*_host.c
+	cp $*.ipg.c $*_ipg.c
+
+#
+# feature expansion
+#
+.features:
+	@ tar xvf  $(PSDBIN)/$(FEATURELIBS)_sim.tar
+	touch .features
+
+HOSTCCLEAN=$(SUBEOBJS:%=%.host.c)
+HOSTOCLEAN=$(SUBEOBJS:%=%.host.o)
+DHOSTOCLEAN=$(SUBEOBJS:%=%.dhost.o)
+IPGCCLEAN=$(SUBEOBJS:%=%.ipg.c)
+IPGOCLEAN=$(SUBEOBJS:%=%.ipg.o)
+DIPGOCLEAN=$(SUBEOBJS:%=%.dipg.o)
+ALLCVCLEAN=$(SUBEOBJS:%=%.allcv.h)
+EXPORTCLEAN=$(SUBEOBJS:%=%.exportstr.h)
+HOSTDECLCLEAN=$(SUBEOBJS:%=%.hostdecl.h)
+IPGDECLCLEAN=$(SUBEOBJS:%=%.ipgdecl.h)
+IPGEXCLEAN=$(SUBEOBJS:%=%.ipgex.h)
+GLOBALCLEAN=$(SUBEOBJS:%=%.global.h)
+# RUNTIMEHDRCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.runtime_hdr.h)
+RUNTIMECLEAN=$(SUBEOBJS:%=%.runtime.h)
+#IPGHDRCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.ipg_hdr.h)
+
+#ALLCV_SIMDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.allcv_simdefs.h)
+#EXPORTSTR_SIMDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.exportstr_simdefs.h)
+#HOSTDECL_SIMDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.hostdecl_simdefs.h)
+#IPGEX_SIMDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.ipgex_simdefs.h)
+#IPGDECL_SIMDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.ipgdecl_simdefs.h)
+#GLOBAL_SIMDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.global_simdefs.h)
+
+#ALLCV_HWDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.allcv_hwdefs.h)
+#EXPORTSTR_HWDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.exportstr_hwdefs.h)
+#HOSTDECL_HWDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.hostdecl_hwdefs.h)
+#IPGEX_HWDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.ipgex_hwdefs.h)
+#IPGDECL_HWDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.ipgdecl_hwdefs.h)
+#GLOBAL_HWDEFSCLEAN=$(SUBEOBJS:%=$(EPICPLUSDIR)/%.global_hwdefs.h)
+
+clean:	
+	rm -fr $(EPICPLUSDIR)
+	rm -fr .*.e .features .sim_merge .hw_merge \
+	$(BINFILES) $(HOSTCCLEAN) $(HOSTOCLEAN) $(DHOSTOCLEAN) \
+	$(IPGCCLEAN) $(IPGOCLEAN) $(DIPGOCLEAN) \
+	$(ALLCVCLEAN) $(EXPORTCLEAN) $(HOSTDECLCLEAN) \
+	$(IPGDECLCLEAN) $(IPGEXCLEAN) $(GLOBALCLEAN) \
+	$(PSDFILE).host $(PSDFILE).ipg $(PSDFILE).eval* \
+	$(RUNTIMECLEAN) \
+	*.eval core a.out *.pdx *.pd *.his *.f *_host.c *_ipg.c \
+	*.allcv.h *.exportstr.h *.hostdecl.h *.ipgdecl.h *.runtime.h \
+	*predownload.in *cvinit.in
+
+#
+# lint targets
+#
+
+lint:
+	@( if [ "`arch`" = "sun4" ] && [ "`whichtarg`" = "sun4" ]; then \
+	make hostsim_lint ; \
+	make ipgsim_lint ; \
+	else \
+	make hosthw_lint ; \
+	make ipghw_lint ; \
+	fi )
+
+hostsim_lint:	$(ALLHOSTSIMLINTFILES)
+	$(LINT.c) $(ALLHOSTSIMLINTFILES) $(LINTLIBS) > $(PSDFILE).hostsim.t2ln
+
+ipgsim_lint:	$(ALLIPGSIMLINTFILES)
+	$(LINT.c) $(ALLIPGSIMLINTFILES) $(LINTLIBS) > $(PSDFILE).ipgsim.t2ln
+
+hosthw_lint:	$(ALLHOSTHWLINTFILES)
+	$(LINT.c) $(ALLHOSTHWLINTFILES) $(LINTLIBS) > $(PSDFILE).hosthw.t2ln
+
+ipghw_lint:	$(ALLIPGHWLINTFILES)
+	$(LINT.c) $(ALLIPGHWLINTFILES) $(LINTLIBS) > $(PSDFILE).ipghw.t2ln
+
+%.ln: %.c
+	$(LINT.c) $(LINTFLAGS) -i $< > $*.t1ln

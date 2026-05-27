@@ -1,0 +1,4 @@
+28;8;/home/gleung/ivar/c/GE/SATsort/SATsort.c;85;1;88;1;0;int;;magcompare;const void *,const void *;m1,m2;1;000084.029:000084.031,000084.044:000084.046;000084.017:000000.000,000084.032:000000.000;000084.001;
+28;8;/home/gleung/ivar/c/GE/SATsort/SATsort.c;94;1;96;1;0;int;;distcompare;const void *,const void *;dist1,dist2;1;000092.030:000092.035,000093.026:000093.031;000092.018:000000.000,000093.014:000000.000;000092.001;
+28;8;/home/gleung/ivar/c/GE/SATsort/SATsort.c;112;34;138;1;0;int;;main;int,char **;argc,argv;1;000112.014:000112.018,000112.028:000112.032;000112.010:000000.000,000112.020:000000.000;000112.001;
+28;8;/home/gleung/ivar/c/GE/SATsort/SATsort.c;142;1;423;1;0;STATUS;;dotest;;;1;;;000141.001;

@@ -1,0 +1,41 @@
+partition = 128;
+phases = 256;
+y = 40;
+    %generate a new sort
+    eval(sprintf(['!./SATsort ' num2str(partition) ' ' num2str(phases) ' ' num2str(y) ])); 
+    a = csvread('postsort.csv');
+    y = a(:,1);
+    z = a(:,2);
+    d = a(:,5);
+    m =a(:,6);
+    p =a(:,7);
+    %equilibrium magnetization
+    T1 = 1200;
+    TR = 24.5;
+    ME = (1-exp(-partition*TR/T1) ) / (1+exp(-partition*TR/T1));
+    %This requires a tip angle of
+    theta = acos(-ME);
+    %Assume that the thing I'm interested in is already at SS
+    thetass = 30*pi/180;
+    T1i = 800; 
+    Mss = sin(thetass)*(1-exp(-TR/T1i))/(1-exp(-TR/T1i)*cos(thetass));
+    
+    t = 0:partition-1;
+    %SCART expression 
+    %t = 1:partition;
+    E = exp(-t*TR/T1);
+    %signal intensity
+    m2 = abs(-ME*E + (1-E));
+    mo = m2;
+    for p=1:length(z)/partition-1
+        m2=[m2 mo];
+    end
+    
+    %to eliminate the zero vector
+    y = y+1;
+    z = z+1;
+    for q= 1:length(z)
+        osf(y(q),z(q)) = m2(q);
+    end
+    imshow((osf),[])
+

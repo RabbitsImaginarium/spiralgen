@@ -1,0 +1,2 @@
+SATsort: SATsort.cpp
+	g++ -Wall -g SATsort.cpp -o SATsort -I/home/gleung/ivar/c/GE/include

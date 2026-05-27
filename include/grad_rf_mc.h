@@ -1,0 +1,205 @@
+#define GX1AMC_SLOT 0
+#define GXWMC_SLOT 1
+#define GX1BMC_SLOT 2
+#define GXMC_FREE 3
+
+#define GY1AMC_SLOT 0
+#define GYWMC_SLOT 1
+#define GY1BMC_SLOT 2
+#define GYMC_FREE 3
+
+#define GZRF1MC_SLOT 0
+#define GZ1MC_SLOT 1
+#define GZMC_FREE 2 
+
+GRAD_PULSE gradxmc[GXMC_FREE] = { 
+  /* GRADX 0 - GX1AMC */
+  {G_TRAP, 
+     (int *)&pw_gx1amca, 
+     (int *)&pw_gx1amcd, 
+     (int *)&pw_gx1amc, 
+     (FLOAT *)NULL,
+     (FLOAT *)&a_gx1amc, 
+     (FLOAT *)NULL,
+     (FLOAT *)NULL,
+     (char *)NULL,
+     1,
+     1.0,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0},
+
+  /* GRADX 1 - GXWMC */
+  {G_TRAP, 
+     (int *)&pw_gxwmca, 
+     (int *)&pw_gxwmcd, 
+     (int *)&pw_gxwmc,
+     (FLOAT *)NULL, 
+     (FLOAT *)&a_gxwmc,
+     (FLOAT *)NULL,
+     (FLOAT *)NULL, 
+     (char *)NULL,
+     1,
+     1.0,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0},
+
+  /* GRADX 2 - GX1BMC */
+  {
+     G_TRAP,
+     (int*)&pw_gx1bmca,
+     (int*)&pw_gx1bmcd,
+     (int*)&pw_gx1bmc,
+     (float *)NULL,
+     (float*)&a_gx1bmc,
+     (float *)NULL,
+     (float *)NULL,
+     (char *)NULL,
+     1,
+     1.0 ,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0
+  }
+};
+ 
+GRAD_PULSE gradymc[GYMC_FREE] = { 
+  /* GRADY 0 - GY1AMC */
+  {G_TRAP,
+     (int *)&pw_gy1amca, 
+     (int *)&pw_gy1amcd, 
+     (int *)&pw_gy1amc,
+     (FLOAT *)NULL, 
+     (FLOAT *)&a_gy1amc,
+     (FLOAT *)NULL,
+     (FLOAT *)NULL,
+     (char *)NULL, 
+     1,
+     1.0,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0},
+
+  /* GRADY 1 - GYWMC */
+  {G_TRAP,
+     (int *)&pw_gywmca, 
+     (int *)&pw_gywmcd, 
+     (int *)&pw_gywmc,
+     (FLOAT *)NULL, 
+     (FLOAT *)&a_gywmc,
+     (FLOAT *)NULL,
+     (FLOAT *)NULL,
+     (char *)NULL, 
+     1,
+     1.0,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0},
+
+  /* GRADY 2 - GY1BMC */
+  {G_TRAP,
+     (int *)&pw_gy1bmca,
+     (int *)&pw_gy1bmcd,
+     (int *)&pw_gy1bmc,
+     (FLOAT *)NULL, 
+     (FLOAT *)&a_gy1bmc,
+     (FLOAT *)NULL,
+     (FLOAT *)NULL, 
+     (char *)NULL, 
+     1,
+     1.0,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0}
+};
+
+GRAD_PULSE gradzmc[GZMC_FREE] = { 
+  /* GRADZ 0 - GZRF1MC */
+  {G_TRAP,
+     (int *)&pw_gzrf1mca, 
+     (int *)&pw_gzrf1mcd,
+     (int *)&pw_gzrf1mc, 
+     (FLOAT *)NULL,
+     (FLOAT *)&a_gzrf1mc,
+     (FLOAT *)NULL,
+     (FLOAT *)NULL, 
+     (char *)NULL, 
+     1,
+     1.0,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0},
+
+  /* GRADZ 1 - GZ1MC */
+  {G_TRAP, 
+     (int *)&pw_gz1mca, 
+     (int *)&pw_gz1mcd,
+     (int *)&pw_gz1mc,
+     (FLOAT *)NULL, 
+     (FLOAT *)&a_gz1mc,
+     (FLOAT *)NULL,
+     (FLOAT *)NULL, 
+     (char *)NULL, 
+     1,
+     1.0,
+     (int *)NULL,
+     0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0,
+     0}
+};
